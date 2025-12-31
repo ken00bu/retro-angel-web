@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+:root {
+  --cardBackground: #000000;
+  --cardStroke: #696969;
+  --textGray: rgb(97, 97, 97);
+  --background: #08311c;
+}
+
+@theme inline {
+  --color-cardBackground: var(--cardBackground);
+  --color-cardStroke: var(--cardStroke);
+  --color-background: var(--background);
+  --color-textGray: var(--textGray);
+  --font-chivoMonoMedium: var(--font-chivo-mono-medium);
+}
+
