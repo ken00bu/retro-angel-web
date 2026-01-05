@@ -1,4 +1,4 @@
-export default function InputBox({width, height, index, value, onChange, setValue}: any){
+export default function InputBox({width, height, index, value, onChange, setValue, max, min}: any){
     const Width = width ? `w-[${width}]` : 'w-[50]'
     const Heigth = height ? `h-[${height}]` : 'h-[50]'
 
@@ -17,6 +17,6 @@ export default function InputBox({width, height, index, value, onChange, setValu
     
     return (
         <div className="rounded-[0.3rem] border-[3px] border-[#6D6D6D] flex w-fit overflow-hidden">
-            <input type="number" className={`${Width} ${Heigth} text-center bg-white focus:outline-none text-black`} value={value} onChange={handleChange} />
+            <input type="number" className={`${Width} ${Heigth} text-center bg-white focus:outline-none text-black no-spin`} value={value} onChange={handleChange} />
         </div>
 )}

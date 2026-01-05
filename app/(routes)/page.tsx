@@ -1,16 +1,22 @@
 'use client'
 import Lottie from "lottie-react";
-import Folders from "../_components/Icons/Folders";
 import typeAnimation from "../_config/LottieAnimation";
+import InputCard from "../_components/InputCard";
 import { motion, useAnimation } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-
+import { LottieRefCurrentProps } from "lottie-react";
+import { useRouter } from "next/navigation";
+import { InputHandleChange } from "../_components/InputCard/InputCard.type";
 
 export default function Home() {
-  const controlsFolders = useAnimation();
-  const lottieRef = useRef(null);
   const [lottieComplete, setLottieComplete ] = useState(false)
-  const [file, setFile] = useState()
+  const [ inputAlert, setInputAlert ] = useState<boolean>(false)
+  
+  const lottieRef = useRef<LottieRefCurrentProps>(null);
+  const router = useRouter()
+  let inputFile
+  let fileURL
+  let fileFormat
 
   const lottieVariants = {
     hidden: {
@@ -19,7 +25,6 @@ export default function Home() {
     visible: {
       transform: 'translateY(-6rem)',
       transition: {
-        type: 'tween',
         duration: 0.3
       }
     }
@@ -37,6 +42,26 @@ export default function Home() {
     }
   }
 
+
+  const handleChange: InputHandleChange = (e: any) => {
+    if (e.target.files.length > 1){
+      setInputAlert(true)
+      return 
+    }
+
+    inputFile = e.target.files?.[0]
+    fileFormat = inputFile.type.split("/")[1]
+    fileURL = URL.createObjectURL(inputFile)
+    console.log(fileURL)
+    const params = new URLSearchParams({
+      file: fileURL.split("/").pop() ?? "",
+      format: fileFormat
+    })
+    
+    router.push('/editor?' + params)
+    return
+  }
+
   useEffect(()=>{
     if(lottieRef.current){
       lottieRef.current.setSpeed(2)
@@ -47,20 +72,12 @@ export default function Home() {
     <div 
       className="w-screen h-screen bg-linear-to-bl from-[#03140B] to-[#151123] flex justify-center items-center flex-col relative"
       >
+        <div className={`absolute text-white font-chivoMonoMedium top-0 left-0 bg-black/30 backdrop-blur-2xl w-full h-16 flex justify-center items-center ${inputAlert ? '' : 'hidden'}`}>You can only upload one video</div>
       <motion.div className="lg:w-3xl absolute flex justify-center" variants={lottieVariants} initial={"hidden"} animate={lottieComplete && "visible"}>
         <Lottie lottieRef={lottieRef} onComplete={()=> setLottieComplete(true)} animationData={typeAnimation} loop={false}/>
       </motion.div>
       <motion.div variants={inputFileVariants} initial={'hidden'} animate={lottieComplete && 'visible'}>
-        <div className="z-40 backdrop-blur-xs lg:backdrop-blur-sm rounded-lg shadow-[0px_0px_24px_0px_rgba(0,0,0,0.4)] overflow-hidden border-cardStroke border-2 cursor-pointer" onMouseEnter={() => controlsFolders .start("animate")} onMouseLeave={() => controlsFolders .start("normal")}>
-          <div className="bg-black/50 gap-5 flex flex-col p-8 lg:pr-32 lg:pl-32">
-            <Folders controls={controlsFolders}/>
-            <div className="flex flex-col font-chivoMonoMedium text-white items-center">
-              <input type="file" className="border-2 border-amber-50 hidden"/>
-              <span className="text-[1.1rem]">Click to Upload</span>
-              <span className="text-[1rem] opacity-30">MP4, AVI, WEBM</span>
-            </div>
-          </div>
-        </div>
+        <InputCard handleChange={handleChange}/>
       </motion.div>
     </div>
   );
