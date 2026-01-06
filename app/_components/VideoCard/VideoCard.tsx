@@ -2,7 +2,7 @@ import InputCard from "../InputCard"
 import { InputHandleChange } from "../InputCard/InputCard.type"
 import { useRouter } from "next/navigation"
 
-export default function VideoCard({src, format}: Record<string, string | null | Blob>){
+export default function VideoCard({src}: Record<string, string>){
     const router = useRouter()
     const handleChange: InputHandleChange = (e: any) => {
     

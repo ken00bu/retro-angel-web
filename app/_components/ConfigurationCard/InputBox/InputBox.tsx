@@ -17,6 +17,13 @@ export default function InputBox({width, height, index, value, onChange, setValu
     
     return (
         <div className="rounded-[0.3rem] border-[3px] border-[#6D6D6D] flex w-fit overflow-hidden">
-            <input type="number" className={`${Width} ${Heigth} text-center bg-white focus:outline-none text-black no-spin`} value={value} onChange={handleChange} />
+            <input 
+                type="number" 
+                className={`${Width} ${Heigth} text-center bg-white focus:outline-none text-black no-spin`} 
+                value={value} 
+                onChange={handleChange}
+                min={200}
+                max={4000}
+                />
         </div>
 )}

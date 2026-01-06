@@ -15,10 +15,12 @@
     "@ffmpeg/util": "^0.12.2",
     "@mui/material": "^7.3.6",
     "lottie-react": "^2.4.1",
+    "lucide-react": "^0.562.0",
     "motion": "^12.23.26",
     "next": "16.1.1",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-responsive": "^10.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

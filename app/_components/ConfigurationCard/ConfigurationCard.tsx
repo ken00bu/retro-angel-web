@@ -1,6 +1,7 @@
 'use client'
 import Slider from "./Slider"
 import InputBox from "./InputBox"
+import { useEffect } from "react"
 
 export default function ConfigurationCard({slider, setSlider, scale, setScale, sliderConfig}: any){
     
@@ -13,7 +14,22 @@ export default function ConfigurationCard({slider, setSlider, scale, setScale, s
         })
     }
 
-    const handleInputBox = ({newValue, index}: any) => {
+    // index = width or Heigth
+    const handleInputBox = ({newValue, index }: any) => {
+        const max = 4000
+
+        console.log('check input box')
+        // if newValue larger than max, then set newValue into max
+        if (newValue > max){
+            console.log('input box lebih besar dari max!')
+            setScale((prev: Record<string, number>) =>({
+                ...prev,
+                [index]: max
+            }))
+
+            return
+        }
+
         setScale((prev: number[]) => ({
             ...prev,
             [index]: newValue
