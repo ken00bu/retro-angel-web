@@ -19,12 +19,12 @@ export default function Editor(){
     const ffmpegRef = useRef(new FFmpeg())
     const params = useSearchParams()
     let videoFormat: string | null
+    const fileFormat = params.get('format')
+    videoFormat = fileFormat
  
 
     useEffect(()=>{
         const fileURL = 'blob:http://' + window.location.host + '/' + params.get('file')
-        const fileFormat = params.get('format')
-        videoFormat = fileFormat
 
         const checkVideo = async() => {
             try {
@@ -48,7 +48,7 @@ export default function Editor(){
             const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd'
             const ffmpeg = ffmpegRef.current;
             ffmpeg.on('log', ({ message }) => {
-                console.log(message);
+                console.log('log ffmpeg: ', message);
             });
 
             await ffmpeg.load({
@@ -71,7 +71,10 @@ export default function Editor(){
 
         const ffmpeg = ffmpegRef.current
         const videoPath = `input.${videoFormat}` 
-        ffmpeg.writeFile(videoPath, videoSrc)
+
+        const res = await fetch(videoSrc)
+        const buffer = await res.arrayBuffer()
+        ffmpeg.writeFile(videoPath, new Uint8Array(buffer))
 
         let vf: boolean[]  = [false]
         let args: string[] = [
@@ -99,10 +102,16 @@ export default function Editor(){
                 generate(args, value, vf) 
                 return
             }
-            console.log('tidak ada yang dipilih')
 
         })
+        args.push('output.mp4')
 
+
+        await ffmpeg.exec(args);
+        const dataVideo = await ffmpeg.readFile('output.mp4') as any;
+        const newSrc = URL.createObjectURL(new Blob([dataVideo.buffer], {type: 'video/mp4'}));
+        console.log('sukses!')
+        setVideoSrc(newSrc)
         console.log(args)
 
     }
