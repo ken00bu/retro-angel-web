@@ -2,10 +2,10 @@ import InputCard from "../InputCard"
 import { InputHandleChange } from "../InputCard/InputCard.type"
 import { useRouter } from "next/navigation"
 
-export default function VideoCard({src}: Record<string, string>){
+export default function VideoCard({src, setSrc}: Record<string, any>){
     const router = useRouter()
     const handleChange: InputHandleChange = (e: any) => {
-    
+        
         const inputFile = e.target.files?.[0]
         const fileFormat = inputFile.type.split("/")[1]
         const fileURL = URL.createObjectURL(inputFile)

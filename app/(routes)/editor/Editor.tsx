@@ -61,6 +61,7 @@ export default function Editor(){
     }, [])
 
     const renderVideo = async() => {
+        console.log('=========START RENDERING============')
         const bitrate = slider[0]
         const noise = slider[1]
         const fps = slider[2]
@@ -76,7 +77,7 @@ export default function Editor(){
         const buffer = await res.arrayBuffer()
         ffmpeg.writeFile(videoPath, new Uint8Array(buffer))
 
-        let vf: boolean[]  = [false]
+        let vfAndNoise: boolean[]  = [false, false]
         let args: string[] = [
             '-y', 
             '-flags', 'output_corrupt',
@@ -84,14 +85,14 @@ export default function Editor(){
         ]
         
         const generateArgs = [
-            [bitrate, (args: string[], value: number, vf: boolean[])=> generateBitrate(args, value, vf)],
-            [noise, (args: string[], value: number, vf: boolean[])=> generateNoise(args, value, vf)],
-            [fps, (args: string[], value: number, vf: boolean[])=> generateFps(args, value, vf)],
-            [delay, (args: string[], value: number, vf: boolean[])=> generateDelay(args, value, vf)]
+            [bitrate, (args: string[], value: number, vfAndNoise: boolean[])=> generateBitrate(args, value, vfAndNoise)],
+            [noise, (args: string[], value: number, vfAndNoise: boolean[])=> generateNoise(args, value, vfAndNoise)],
+            [fps, (args: string[], value: number, vfAndNoise: boolean[])=> generateFps(args, value, vfAndNoise)],
+            [delay, (args: string[], value: number, vfAndNoise: boolean[])=> generateDelay(args, value, vfAndNoise)]
         ]
 
         if(width !== 0 && height !== 0 ){
-            generateScale(args, height, width, vf)
+            generateScale(args, height, width, vfAndNoise)
         }
 
         generateArgs.forEach((arr, index)=>{
@@ -99,40 +100,70 @@ export default function Editor(){
             const generate = arr[1] 
 
             if(value != 0){
-                generate(args, value, vf) 
+                generate(args, value, vfAndNoise) 
                 return
             }
 
         })
         args.push('output.mp4')
 
-
+        console.log('sedang eksekusi argumen...')
         await ffmpeg.exec(args);
+        console.log('ngebaca output...')
         const dataVideo = await ffmpeg.readFile('output.mp4') as any;
+        console.log('membuat blob url baru...')
         const newSrc = URL.createObjectURL(new Blob([dataVideo.buffer], {type: 'video/mp4'}));
-        console.log('sukses!')
+        console.log('mengset ke src', newSrc)
         setVideoSrc(newSrc)
+        console.log('=========FINISH FINISH FINISH FINIH============')
+        if (vfAndNoise[1]){
+            console.log('=========HANDLE NOISE TO VIEWABLE===============')
+            ffmpeg.writeFile('inputToViewAble.mp4', dataVideo)
+            const argsToViewAble = [
+                '-y', 
+                '-flags', 'output_corrupt',
+                '-i', 'inputToViewAble.mp4',
+                'outputButViewAble.mp4'
+            ]
+            await ffmpeg.exec(argsToViewAble)
+            const dataVideoButViewAble = await ffmpeg.readFile('outputButViewAble.mp4') as any
+            const newSrcButViewAble = URL.createObjectURL(new Blob([dataVideoButViewAble.buffer], {type: 'video/mp4'}));
+            setVideoSrc(newSrcButViewAble)
+        }
+
         console.log(args)
 
     }
 
+    useEffect(()=>{
+        console.log('video src berubah: ', videoSrc)
+        const test = async() => {
+            const res = await fetch(videoSrc)
+            if(res.ok){
+                console.log('res ok, ada videonya')
+                return
+            }
+            console.log('res gak ada videonya')
+        }
+        test()
+    }, [videoSrc])
     
     return (
         <div className="bg-linear-to-bl from-[#03140B] to-[#151123] min-h-screen h-full flex items-center flex-col gap-10 pt-5 lg:pt-20 pb-28">
             <div className="flex flex-col gap-3">
                 <div className="bg-black rounded-2xl h-120 w-[90vw] lg:w-[50vw] flex justify-center items-center text-white">
-                    <VideoCard src={videoSrc}/>
+                    <VideoCard src={videoSrc} setSrc={setVideoSrc}/>
                 </div>
                 <div className="w-[90vw] lg:w-[50vw]">
                     <MetadataCard scale={scale} bitrate={slider[0]} fps={slider[2]} delay={slider[3]} noise={slider[1]}/>
                 </div>
             </div>
             <div className="flex flex-col justify-center lg:flex-row gap-14 lg:gap-10">
-                <div className="w-[90vw] lg:w-140 flex flex-col gap-3">
+                <div className="w-[90vw] lg:w-110 flex flex-col gap-3">
                     <ConfigurationCard slider={slider} setSlider={setSlider} scale={scale} setScale={setScale} sliderConfig={sliderConfig}/>
                     <button onClick={renderVideo} className="lg:hidden group flex h-14 items-center justify-center rounded-md border border-orange-600 bg-linear-to-b from-orange-400 via-orange-400 to-orange-500 px-4 text-neutral-50 shadow-[inset_0_1px_0px_0px_#fdba74] active:[box-shadow:none]"><span className="block group-active:transform-[translate3d(0,1px,0)]">Render Video</span></button>
                 </div>
-                <div className="w-[90vw] lg:w-100 flex flex-col gap-7">
+                <div className="w-[90vw] lg:w-90 flex flex-col gap-7">
                     <DescriptorCard title={DescriptorString.title} list={DescriptorString.list}/>
                     <button onClick={renderVideo} className="group hidden lg:flex h-14 items-center justify-center rounded-md border border-orange-600 bg-linear-to-b from-orange-400 via-orange-500 to-orange-500 px-4 text-neutral-50 shadow-[inset_0_1px_0px_0px_#fdba74] active:[box-shadow:none]"><span className="block group-active:transform-[translate3d(0,1px,0)]">Render Video</span></button>
                 </div>
@@ -141,56 +172,56 @@ export default function Editor(){
     )
 }
 
-const generateScale = (args: string[], height: number, width: number, vf: boolean[]) =>{
-    if (vf[0]){
+const generateScale = (args: string[], height: number, width: number, vfAndNoise: boolean[]) =>{
+    if (vfAndNoise[0]){
         const indexOfVf = args.findIndex(item => item == "-vf")
         const newVf = args[indexOfVf + 1] + `, scale=${height}:${width}`
         args.splice(indexOfVf + 1, 1, newVf)
     }else{
-        vf[0] = true
+        vfAndNoise[0] = true
         args.push(
             '-vf', `scale=${height}:${width}`
         )
     }
 }
 
-const generateBitrate = (args: string[], bitrate: number, vf: boolean[]) =>{
+const generateBitrate = (args: string[], bitrate: number, vfAndNoise: boolean[]) =>{
 
     args.push(
         '-c:v', 'libx264', 
-        '-b:v ', `${bitrate}k`
+        '-b:v', `${bitrate}k`
     )
 }
 
-const generateNoise = (args: string[], noise: number, vf: boolean[]) =>{
-
+const generateNoise = (args: string[], noise: number, vfAndNoise: boolean[]) =>{
+    vfAndNoise[1] = true
     args.push(
         '-bsf:v', `noise=amount=${noise}`
     )
 }
 
-const generateFps = (args: string[], fps: number, vf: boolean[]) =>{
+const generateFps = (args: string[], fps: number, vfAndNoise: boolean[]) =>{
 
-    if (vf[0]){
+    if (vfAndNoise[0]){
         const indexOfVf = args.findIndex(item => item == "-vf")
         const newVf = args[indexOfVf + 1] + `, fps=${fps}`
         args.splice(indexOfVf + 1, 1, newVf)
     }else{
-        vf[0] = true
+        vfAndNoise[0] = true
         args.push(
             '-vf', `fps=${fps}`
         )
     }
 }
 
-const generateDelay = (args: string[], delay: number, vf: boolean[]) =>{
+const generateDelay = (args: string[], delay: number, vfAndNoise: boolean[]) =>{
 
-    if (vf[0]){
+    if (vfAndNoise[0]){
         const indexOfVf = args.findIndex(item => item == "-vf")
         const newVf = args[indexOfVf + 1] + `, tmix=frames=${delay}:weights='1 0.6 0.3 0.15`
         args.splice(indexOfVf + 1, 1, newVf)
     }else{
-        vf[0] = true
+        vfAndNoise[0] = true
         args.push(
             '-vf', `tmix=frames=${delay}:weights='1 0.6 0.3 0.15`
         )
