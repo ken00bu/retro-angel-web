@@ -137,20 +137,6 @@ export default function Editor(){
         console.log('finish with args: ',args)
 
     }
-
-    useEffect(()=>{
-        console.log('video src berubah: ', videoSrc)
-        const test = async() => {
-            console.log('mencoba fetch: ', videoSrc)
-            const res = await fetch(videoSrc)
-            if(res.ok){
-                console.log('res ok, ada videonya')
-                return
-            }
-            console.log('res gak ada videonya')
-        }
-        test()
-    }, [videoSrc])
     
     return (
         <div className="bg-linear-to-bl from-[#03140B] to-[#151123] min-h-screen h-full flex items-center flex-col gap-10 pt-5 lg:pt-20 pb-28">
