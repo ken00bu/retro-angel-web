@@ -141,6 +141,7 @@ export default function Editor(){
     useEffect(()=>{
         console.log('video src berubah: ', videoSrc)
         const test = async() => {
+            console.log('mencoba fetch: ', videoSrc)
             const res = await fetch(videoSrc)
             if(res.ok){
                 console.log('res ok, ada videonya')
