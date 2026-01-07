@@ -31,7 +31,7 @@ export default function Editor(){
  
 
     useEffect(()=>{
-        const fileURL = 'blob:http://' + window.location.host + '/' + params.get('file')
+        const fileURL = 'blob:https://' + window.location.host + '/' + params.get('file')
 
         const checkVideo = async() => {
             try {
@@ -42,8 +42,10 @@ export default function Editor(){
                 }
 
                 setVideoSrc(response.url);
+                console.log('berhasil fetch video blob')
             } catch (error) {
                 setVideoSrc('failed');
+                console.log('gagal fetch video blob')
             }
 
         }
