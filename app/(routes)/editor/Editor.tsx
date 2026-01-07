@@ -21,6 +21,13 @@ export default function Editor(){
     let videoFormat: string | null
     const fileFormat = params.get('format')
     videoFormat = fileFormat
+    let vfAndNoise: boolean[]  = [false, false]
+    let args: string[] = [
+        '-y', 
+        '-flags', 'output_corrupt',
+        '-i',
+    ]
+    const videoPath = `input.${videoFormat}` 
  
 
     useEffect(()=>{
@@ -71,18 +78,12 @@ export default function Editor(){
         const height = scale.height
 
         const ffmpeg = ffmpegRef.current
-        const videoPath = `input.${videoFormat}` 
+        args.splice(4, 10000)
+        args.push(videoPath)
 
         const res = await fetch(videoSrc)
         const buffer = await res.arrayBuffer()
         ffmpeg.writeFile(videoPath, new Uint8Array(buffer))
-
-        let vfAndNoise: boolean[]  = [false, false]
-        let args: string[] = [
-            '-y', 
-            '-flags', 'output_corrupt',
-            '-i', videoPath,
-        ]
         
         const generateArgs = [
             [bitrate, (args: string[], value: number, vfAndNoise: boolean[])=> generateBitrate(args, value, vfAndNoise)],
@@ -105,33 +106,35 @@ export default function Editor(){
             }
 
         })
+
         args.push('output.mp4')
 
-        console.log('sedang eksekusi argumen...')
+        //execute Ffmpeg
         await ffmpeg.exec(args);
-        console.log('ngebaca output...')
         const dataVideo = await ffmpeg.readFile('output.mp4') as any;
-        console.log('membuat blob url baru...')
         const newSrc = URL.createObjectURL(new Blob([dataVideo.buffer], {type: 'video/mp4'}));
-        console.log('mengset ke src', newSrc)
         setVideoSrc(newSrc)
         console.log('=========FINISH FINISH FINISH FINIH============')
+
+        //if Noise active, then rerender to make playable
         if (vfAndNoise[1]){
             console.log('=========HANDLE NOISE TO VIEWABLE===============')
             ffmpeg.writeFile('inputToViewAble.mp4', dataVideo)
+
             const argsToViewAble = [
                 '-y', 
                 '-flags', 'output_corrupt',
                 '-i', 'inputToViewAble.mp4',
                 'outputButViewAble.mp4'
             ]
+            
             await ffmpeg.exec(argsToViewAble)
             const dataVideoButViewAble = await ffmpeg.readFile('outputButViewAble.mp4') as any
             const newSrcButViewAble = URL.createObjectURL(new Blob([dataVideoButViewAble.buffer], {type: 'video/mp4'}));
             setVideoSrc(newSrcButViewAble)
         }
 
-        console.log(args)
+        console.log('finish with args: ',args)
 
     }
 

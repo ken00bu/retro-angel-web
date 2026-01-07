@@ -20,6 +20,7 @@ export default function DescriptorCard({title, list}: Descriptor){
     }, [])
 
 
+
     return (
             <div className="border-cardStroke border-2 rounded-2xl relative overflow-hidden cursor-pointer" onClick={()=>setIsOpen(!isOpen)}>
                 <div className="absolute bg-cardBackground opacity-50 inset-0 w-full "></div>

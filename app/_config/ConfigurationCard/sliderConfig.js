@@ -8,7 +8,7 @@ const sliderConfig = [
         {
             title: "NOISE",
             Slider: {
-                max: 11100
+                max: 30000
             }
         },
         {
